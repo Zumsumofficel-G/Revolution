@@ -101,7 +101,7 @@ const LandingPage = () => {
       } catch (error) {
         console.error("Failed to fetch server stats:", error);
         setServerStats({
-          players: 1,
+          players: 0,
           max_players: 64,
           hostname: "Revolution Roleplay",
           gametype: "ESX Legacy"
