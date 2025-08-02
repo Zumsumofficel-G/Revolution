@@ -76,62 +76,56 @@ const AuthProvider = ({ children }) => {
 };
 
 // Landing Page
-const LandingPage = () => {
-  const [serverStats, setServerStats] = useState({ players: 0, max_players: 64, hostname: "Revolution Roleplay" });
-  const [applications, setApplications] = useState([]);
-  const [changelogs, setChangelogsState] = useState([]);
+useEffect(() => {
+  const fetchServerStats = async () => {
+    try {
+      const response = await fetch("http://45.84.198.57:30120/dynamic.json");
+      const data = await response.json();
+      setServerStats({
+        players: typeof data.clients === "number" ? data.clients : 0,
+        max_players: parseInt(data.sv_maxclients) || 64,
+        hostname: data.hostname || "Revolution Roleplay",
+        gametype: data.gametype || "ESX Legacy"
+      });
+    } catch (error) {
+      console.error("Failed to fetch server stats:", error);
+      setServerStats({
+        players: 0,
+        max_players: 64,
+        hostname: "Revolution Roleplay",
+        gametype: "ESX Legacy"
+      });
+    }
+  };
 
-  useEffect(() => {
-    const fetchServerStats = async () => {
-      try {
-        // Direct fetch to FiveM server (CORS might be an issue, but let's try)
-        const response = await fetch("http://45.84.198.57:30120/dynamic.json");
-        const data = await response.json();
-        setServerStats({
-          players: data.clients || 0,
-          max_players: parseInt(data.sv_maxclients) || 64,
-          hostname: data.hostname || "Revolution Roleplay",
-          gametype: data.gametype || "ESX Legacy"
-        });
-      } catch (error) {
-        console.error("Failed to fetch server stats:", error);
-        // Use mock data if FiveM server is unreachable
-        setServerStats({
-          players: 1,
-          max_players: 64,
-          hostname: "Revolution Roleplay",
-          gametype: "ESX Legacy"
-        });
-      }
-    };
+  const fetchApplications = () => {
+    const apps = getApplications().filter(app => app.is_active);
+    setApplications(apps);
+  };
 
+  const fetchChangelogs = () => {
+    const logs = getChangelogs()
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 5);
+    setChangelogsState(logs);
+  };
 
+  // Initial fetch
+  fetchServerStats();
+  fetchApplications();
+  fetchChangelogs();
 
-
-    const fetchApplications = () => {
-      const apps = getApplications().filter(app => app.is_active);
-      setApplications(apps);
-    };
-
-    const fetchChangelogs = () => {
-      const logs = getChangelogs()
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        .slice(0, 5);
-      setChangelogsState(logs);
-    };
-
+  // Set interval to refresh every 30 sec
+  const interval = setInterval(() => {
     fetchServerStats();
     fetchApplications();
     fetchChangelogs();
+  }, 30000);
 
-    const interval = setInterval(() => {
-      fetchServerStats();
-      fetchApplications();
-      fetchChangelogs();
-    }, 30000);
-    
+  // Cleanup on unmount
   return () => clearInterval(interval);
 }, []);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
