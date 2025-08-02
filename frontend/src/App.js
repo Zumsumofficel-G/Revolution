@@ -75,7 +75,7 @@ const AuthProvider = ({ children }) => {
   );
 };
 
-// Landing Page
+// Landing Page 
 const LandingPage = () => {
   const [serverStats, setServerStats] = useState({
     players: 0,
