@@ -90,10 +90,10 @@ useEffect(() => {
     } catch (error) {
       console.error("Failed to fetch server stats:", error);
       setServerStats({
-        players: offline,
-        max_players: offline,
-        hostname: "offline",
-        gametype: "offline"
+        players: 0,
+        max_players: 64,
+        hostname: "Revolution Roleplay",
+        gametype: "ESX Legacy"
       });
     }
   };
