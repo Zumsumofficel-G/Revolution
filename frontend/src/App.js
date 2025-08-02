@@ -77,14 +77,19 @@ const AuthProvider = ({ children }) => {
 
 // Landing Page
 const LandingPage = () => {
-  const [serverStats, setServerStats] = useState({ players: 0, max_players: 64, hostname: "Revolution Roleplay" });
+  const [serverStats, setServerStats] = useState({
+    players: 0,
+    max_players: 64,
+    hostname: "Revolution Roleplay",
+    gametype: "ESX Legacy"
+  });
+
   const [applications, setApplications] = useState([]);
   const [changelogs, setChangelogsState] = useState([]);
 
   useEffect(() => {
     const fetchServerStats = async () => {
       try {
-        // Direct fetch to FiveM server (CORS might be an issue, but let's try)
         const response = await fetch("http://45.84.198.57:30120/dynamic.json");
         const data = await response.json();
         setServerStats({
@@ -95,7 +100,6 @@ const LandingPage = () => {
         });
       } catch (error) {
         console.error("Failed to fetch server stats:", error);
-        // Use mock data if FiveM server is unreachable
         setServerStats({
           players: 1,
           max_players: 64,
@@ -117,16 +121,19 @@ const LandingPage = () => {
       setChangelogsState(logs);
     };
 
+    // Initial fetch
     fetchServerStats();
     fetchApplications();
     fetchChangelogs();
 
+    // Refresh every 30 seconds
     const interval = setInterval(() => {
       fetchServerStats();
       fetchApplications();
       fetchChangelogs();
     }, 30000);
 
+    // Cleanup on unmount
     return () => clearInterval(interval);
   }, []);
 
