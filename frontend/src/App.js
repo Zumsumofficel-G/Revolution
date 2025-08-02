@@ -76,56 +76,58 @@ const AuthProvider = ({ children }) => {
 };
 
 // Landing Page
-useEffect(() => {
-  const fetchServerStats = async () => {
-    try {
-      const response = await fetch("http://45.84.198.57:30120/dynamic.json");
-      const data = await response.json();
-      setServerStats({
-        players: typeof data.clients === "number" ? data.clients : 0,
-        max_players: parseInt(data.sv_maxclients) || 64,
-        hostname: data.hostname || "Revolution Roleplay",
-        gametype: data.gametype || "ESX Legacy"
-      });
-    } catch (error) {
-      console.error("Failed to fetch server stats:", error);
-      setServerStats({
-        players: 0,
-        max_players: 64,
-        hostname: "Revolution Roleplay",
-        gametype: "ESX Legacy"
-      });
-    }
-  };
+const LandingPage = () => {
+  // State variabler her
+  const [serverStats, setServerStats] = useState({ players: 0, max_players: 64, hostname: "Revolution Roleplay" });
+  const [applications, setApplications] = useState([]);
+  const [changelogs, setChangelogsState] = useState([]);
 
-  const fetchApplications = () => {
-    const apps = getApplications().filter(app => app.is_active);
-    setApplications(apps);
-  };
+  useEffect(() => {
+    const fetchServerStats = async () => {
+      try {
+        const response = await fetch("http://45.84.198.57:30120/dynamic.json");
+        const data = await response.json();
+        setServerStats({
+          players: typeof data.clients === "number" ? data.clients : 0,
+          max_players: parseInt(data.sv_maxclients) || 64,
+          hostname: data.hostname || "Revolution Roleplay",
+          gametype: data.gametype || "ESX Legacy"
+        });
+      } catch (error) {
+        console.error("Failed to fetch server stats:", error);
+        setServerStats({
+          players: 0,
+          max_players: 64,
+          hostname: "Revolution Roleplay",
+          gametype: "ESX Legacy"
+        });
+      }
+    };
 
-  const fetchChangelogs = () => {
-    const logs = getChangelogs()
-      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      .slice(0, 5);
-    setChangelogsState(logs);
-  };
+    const fetchApplications = () => {
+      const apps = getApplications().filter(app => app.is_active);
+      setApplications(apps);
+    };
 
-  // Initial fetch
-  fetchServerStats();
-  fetchApplications();
-  fetchChangelogs();
+    const fetchChangelogs = () => {
+      const logs = getChangelogs()
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 5);
+      setChangelogsState(logs);
+    };
 
-  // Set interval to refresh every 30 sec
-  const interval = setInterval(() => {
     fetchServerStats();
     fetchApplications();
     fetchChangelogs();
-  }, 30000);
 
-  // Cleanup on unmount
-  return () => clearInterval(interval);
-}, []);
+    const interval = setInterval(() => {
+      fetchServerStats();
+      fetchApplications();
+      fetchChangelogs();
+    }, 30000);
 
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
